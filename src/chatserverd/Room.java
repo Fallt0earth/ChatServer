@@ -13,181 +13,167 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
 /**
  *
  * @author dstok
  */
 public class Room extends Thread implements Runnable {
 
-	private List<User> users;
-// private ArrayList<Socket> clients;
-	private String roomName;
-	// private ArrayList<Thread> threads = new ArrayList<>();
-	private List<BufferedReader> in = Collections.synchronizedList(new ArrayList<>());
-	private ArrayList<PrintWriter> out = new ArrayList<>();
-	private Tracker track;
-	public boolean flag = false;
+    private List<User> users;
 
-	public Room(User newUser) {
-		this.users = Collections.synchronizedList(new ArrayList<>());
-		users.add(newUser);
-		for (User i : users) {
-			out.add(i.getOut());
-			in.add(i.getIn());
-		}
+    private String roomName;
+    private List<BufferedReader> in = Collections.synchronizedList(new ArrayList<>());
+    private ArrayList<PrintWriter> out = new ArrayList<>();
+    private Tracker track;
+    public boolean flag = false;
 
-	}
+    public Room(User newUser) {
+        this.users = Collections.synchronizedList(new ArrayList<>());
+        users.add(newUser);
+        for (User i : users) {
+            out.add(i.getOut());
+            in.add(i.getIn());
+        }
 
-	public Room(String roomName, User newUser, Tracker track) {
-		this.users = Collections.synchronizedList(new ArrayList<>());
-		this.roomName = roomName;
-		this.track = track;
-		//synchronized (users) {
-			users.add(newUser);
-			for (User i : users) {
-				out.add(i.getOut());
-				in.add(i.getIn());
-			}
-		//}
-	}
+    }
 
-	public List<User> getUsers() {
-		return users;
-	}
+    public Room(String roomName, User newUser, Tracker track) {
+        this.users = Collections.synchronizedList(new ArrayList<>());
+        this.roomName = roomName;
+        this.track = track;
 
-	public String getRoomName() {
-		return roomName;
-	}
+        users.add(newUser);
+        for (User i : users) {
+            out.add(i.getOut());
+            in.add(i.getIn());
+        }
 
-	public void setRoomName(String roomName) {
-		this.roomName = roomName;
-	}
+    }
 
-	@Override
-	public void run() {
-		for (int i = 0; i < users.size(); i++) {
-			System.out.println(users.get(i).getUsername());
-		}
-		flag = false;
-		this.exe();
+    public List<User> getUsers() {
+        return users;
+    }
 
-	}
+    public String getRoomName() {
+        return roomName;
+    }
 
-	public void addUser(User user) {
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
 
-		users.add(user);
-		flag = true;
+    @Override
+    public void run() {
+        for (int i = 0; i < users.size(); i++) {
+            System.out.println(users.get(i).getUsername());
+        }
+        flag = false;
+        this.exe();
 
-		//System.out.println("new thread exe");
-		//this.run();
-		//track.getManager().execute(this);
-	}
+    }
 
-	private void exe() {
+    public void addUser(User user) {
 
-		//add the initial users to input and output stream array lists
-		int totalUsers = 0;
-		int i = 0;
-		int size = users.size();
-		int j = 0;
-		System.out.println("startup of exe method 95");
-		//out.add(users.get(i).getOut());
-		//in.add(users.get(i).getIn());
-		int v = i;
-		Runnable first = () -> {
-			dist(v);
-		};
-		track.getManager().execute(first);
+        users.add(user);
+        flag = true;
 
-		//exe only if there are more users since the start
-		//synchronized (users) {
-		int oldSize = users.size();
-			while (true) {
-				
-			
-				
+    }
 
-				if (flag) {
-					System.out.println("new in");
-					i++;
-					out.add(users.get(i).getOut());
-					in.add(users.get(i).getIn());
-					
-					int x = i;
-					flag = false;
-					Runnable runnable = () -> {
-						System.out.println("lambda");
+    private void exe() {
 
-						dist(x);
-					};
-					
-					track.getManager().execute(runnable);
-				}
-				oldSize = users.size();
+        //add the initial users to input and output stream array lists
+        int totalUsers = 0;
+        int i = 0;
+        int size = users.size();
+        int j = 0;
 
-			
-		}
-	}
+        int v = i;
+        Runnable first = () -> {
+            dist(v);
+        };
+        track.getManager().execute(first);
 
-	private void dist(int i) {
+        //exe only if there are more users since the start
+        int oldSize = users.size();
+        while (true) {
 
-		System.out.println("dist method run 135");
+            if (flag) {
+                System.out.println("new in");
+                i++;
+                out.add(users.get(i).getOut());
+                in.add(users.get(i).getIn());
 
-		try {
+                int x = i;
+                flag = false;
+                Runnable runnable = () -> {
+                    System.out.println("lambda");
 
-			
-			//if an input stream has input then execute distribute method ready should not block
-			String line;
-			//synchronized (users) {
-				while ((line = in.get(i).readLine()) != null) {
+                    dist(x);
+                };
 
-					System.out.println("ready: " + i);
-					System.out.println("in" + in.get(i).toString());
-					String input = line; //in.get(i).readLine();
-                                        
-                                        //if user exits clear out space in the room
-					if (input.equals("exit")) {
-						out.get(i).println("Goodbye");
-						users.get(i).getConnection().close();
-                                                out.remove(i);
-                                                in.remove(i);
-                                                break;
-					} else {
-						
-						Room.this.distribute(users.get(i).getConnection(), input);
-					}
-				}
-			//}
+                track.getManager().execute(runnable);
+            }
+            oldSize = users.size();
 
-		} catch (IOException ex) {
-			System.out.println("exveption in room 157");
-		}
-	}
+        }
+    }
 
-	//I shouldnt have to check all users everytime, gotta be a better way
-	/**
-	 *
-	 * @param sender
-	 * @param msg
-	 * @throws IOException
-	 */
-	public void distribute(Socket sender, String msg) throws IOException {
-		int size = users.size();
-		String sendersName = "";
-			for (int i = 0; i < size; i++) {
-				if(users.get(i).doesUserOwnSocket(sender)){
-					sendersName = users.get(i).getUsername();
-					break;
-				}
-			}
+    private void dist(int i) {
 
-		for (int i = 0; i < size; i++) {
+        System.out.println("dist method run 135");
 
-			(users.get(i).getOut()).println( sendersName + ": " + msg);
-	
+        try {
 
-		}
+            //if an input stream has input then execute distribute method ready should not block
+            String line;
+            //synchronized (users) {
+            while ((line = in.get(i).readLine()) != null) {
 
-	}
+                System.out.println("ready: " + i);
+                System.out.println("in" + in.get(i).toString());
+                String input = line; //in.get(i).readLine();
+
+                //if user exits clear out space in the room
+                if (input.equals("exit")) {
+                    out.get(i).println("Goodbye");
+                    users.get(i).getConnection().close();
+                    out.remove(i);
+                    in.remove(i);
+                    break;
+                } else {
+
+                    Room.this.distribute(users.get(i).getConnection(), input);
+                }
+            }
+            //}
+
+        } catch (IOException ex) {
+            System.out.println("exveption in room 157");
+        }
+    }
+
+    //I shouldnt have to check all users everytime, gotta be a better way
+    /**
+     *
+     * @param sender
+     * @param msg
+     * @throws IOException
+     */
+    public void distribute(Socket sender, String msg) throws IOException {
+        int size = users.size();
+        String sendersName = "";
+        for (int i = 0; i < size; i++) {
+            if (users.get(i).doesUserOwnSocket(sender)) {
+                sendersName = users.get(i).getUsername();
+                break;
+            }
+        }
+
+        for (int i = 0; i < size; i++) {
+
+            (users.get(i).getOut()).println(sendersName + ": " + msg);
+
+        }
+
+    }
 }
