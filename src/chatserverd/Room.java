@@ -26,6 +26,7 @@ public class Room extends Thread implements Runnable {
     private ArrayList<PrintWriter> out = new ArrayList<>();
     private Tracker track;
     public boolean flag = false;
+    private double instanceTime;
 
     public Room(User newUser) {
         this.users = Collections.synchronizedList(new ArrayList<>());
@@ -34,6 +35,7 @@ public class Room extends Thread implements Runnable {
             out.add(i.getOut());
             in.add(i.getIn());
         }
+        instanceTime = System.currentTimeMillis();
 
     }
 
@@ -47,6 +49,7 @@ public class Room extends Thread implements Runnable {
             out.add(i.getOut());
             in.add(i.getIn());
         }
+        instanceTime = System.currentTimeMillis() * 1000;
 
     }
 
@@ -121,6 +124,8 @@ public class Room extends Thread implements Runnable {
     private void dist(int i) {
 
         System.out.println("dist method run 135");
+        
+        
 
         try {
 
@@ -141,8 +146,21 @@ public class Room extends Thread implements Runnable {
                     in.remove(i);
                     break;
                 } else {
-
+                    double current = System.currentTimeMillis() * 1000;
+                    users.get(i).messagesSent++;
+                    int sent = users.get(i).messagesSent;
+                    double elapsed = instanceTime - current;
+                    if(sent/elapsed < 5){
                     Room.this.distribute(users.get(i).getConnection(), input);
+                    instanceTime = current;
+                    }
+                    else{
+                        (users.get(i).getOut()).println("to many Messages send exceeded 5 msg's per second CLOSING CONNECTION");
+                        users.get(i).getConnection().close();
+                        users.remove(i);
+                        in.remove(i);
+                        out.remove(i);
+                    }
                 }
             }
             //}

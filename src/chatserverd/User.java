@@ -27,6 +27,7 @@ public class User implements Runnable {
     private PrintWriter out;
     private BufferedReader in;
     private Tracker track;
+    public int messagesSent = 0;
     
     
    // private Room 
