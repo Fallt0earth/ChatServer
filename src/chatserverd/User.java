@@ -16,8 +16,8 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author dstok
- * This only supports one socket per user instance, eventually will figure out how to have multiple, big issue is figured out active
+ * @author dstok This only supports one socket per user instance, eventually
+ * will figure out how to have multiple, big issue is figured out active
  */
 public class User implements Runnable {
 
@@ -28,10 +28,8 @@ public class User implements Runnable {
     private BufferedReader in;
     private Tracker track;
     public int messagesSent = 0;
-    
-    
-   // private Room 
 
+    // private Room 
     public User(Socket socket, String name, Tracker track) {
         connection = socket;
         this.ip = connection.getInetAddress();
@@ -44,9 +42,9 @@ public class User implements Runnable {
         this.ip = connection.getInetAddress();
         this.track = track;
     }
-    
-    public void init(){
-		System.out.println("in init");
+
+    public void init() {
+        System.out.println("in init");
         try {
             this.menu(connection, track);
         } catch (IOException ex) {
@@ -56,12 +54,10 @@ public class User implements Runnable {
 
     public boolean doesUserOwnSocket(Socket socket) {
 
-        
-            if (connection.equals(socket)) {
-                return true;
-            }
+        if (connection.equals(socket)) {
+            return true;
+        }
 
-        
         return false;
     }
 
@@ -77,16 +73,14 @@ public class User implements Runnable {
 
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        
+
         out.println("connection established");
-                
 
         if (username == null) {
             out.println("Please enter a username");
             username = in.readLine();
             System.out.println(username);
-           
-         
+
         }
         out.println("Create a room or Join a room? (C/J)");
         System.out.println(track);
@@ -121,29 +115,29 @@ public class User implements Runnable {
 
     @Override
     public void run() {
-        
+
     }
 
     private void createRoom() throws IOException {
         String roomName = "";
-        while(true){
-        out.println("What would you like to call the room");
-        in.readLine();
-        roomName = in.readLine();
+        while (true) {
+            out.println("What would you like to call the room");
+            in.readLine();
+            roomName = in.readLine();
             System.out.println(roomName);
-        boolean flag = false;
-        for (Room i : track.getRooms()) {
-            if (i.getRoomName().equalsIgnoreCase(roomName)) {
-                out.println("Sorry, That name is in use please enter a different name");
-                flag = true;
+            boolean flag = false;
+            for (Room i : track.getRooms()) {
+                if (i.getRoomName().equalsIgnoreCase(roomName)) {
+                    out.println("Sorry, That name is in use please enter a different name");
+                    flag = true;
+                    break;
+                }
+
+            }
+            //there is not another room with same room so creation can continue
+            if (!flag) {
                 break;
             }
-
-        }
-        //there is not another room with same room so creation can continue
-        if(!flag){
-            break;
-        }
         }
         //create new room obj
         Room created = new Room(roomName, this, track);
@@ -152,50 +146,44 @@ public class User implements Runnable {
         //create thread
         //Thread roomRun = new Thread(created);
         //start 
-	//created.start();
+        //created.start();
         track.getManager().submit(created);
-		System.out.println("flag");
-        
-        
-        
+        System.out.println("flag");
 
     }
 
     private void joinRoom() throws IOException {
-		
+
         Room join = null;
-        while(true){
-         out.println("What would you like to join");
-         in.readLine();
-        String roomName = in.readLine();
+        while (true) {
+            out.println("What would you like to join");
+            in.readLine();
+            String roomName = in.readLine();
             System.out.println(roomName);
-        boolean flag = false;
-        for (Room i : track.getRooms()) {
-            if(i.getRoomName().equalsIgnoreCase(roomName)){
-                out.println("Joining.....");
-                join = i;
-                flag = true;
-                break;
+            boolean flag = false;
+            for (Room i : track.getRooms()) {
+                if (i.getRoomName().equalsIgnoreCase(roomName)) {
+                    out.println("Joining.....");
+                    join = i;
+                    flag = true;
+                    break;
+                }
             }
-    }
-        //room found so exit loop
-        if(flag){
-            break;
-            
+            //room found so exit loop
+            if (flag) {
+                break;
+
+            }
+            out.println("Room not Found please try again");
         }
-        out.println("Room not Found please try again");
-    }
         //null pointer should never occur
-		//track.addUserRoom(this, join);
-		//join.flag.set(true);
-	//	synchronized(this){
+        //track.addUserRoom(this, join);
+        //join.flag.set(true);
+        //	synchronized(this){
         join.addUser(this);
-		//}
-	
-		//track.getManager().execute(join);
-		
-        
-        
+        //}
+
+        //track.getManager().execute(join);
     }
 
     @Override
@@ -226,8 +214,5 @@ public class User implements Runnable {
     public void setTrack(Tracker track) {
         this.track = track;
     }
-    
-    
-    
 
 }

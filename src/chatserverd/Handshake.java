@@ -44,7 +44,8 @@ public class Handshake implements Runnable {
         //may want to make index a class field
 
         InetAddress addr = InetAddress.getByName("127.0.0.1");
-        listen = new ServerSocket(ports.get(i), 128, addr);
+        //limit of 5 connections qued at once
+        listen = new ServerSocket(ports.get(i), 5, addr);
     
         
         clientSocket = listen.accept();
@@ -90,22 +91,10 @@ public class Handshake implements Runnable {
         //this may need to be implememnted could 
         //determines if the current IP already has a user associated if so attack new socket connection to that existing user otherwise create new
       // ArrayList<User> users =  track.getUsers();
-       boolean flag = false;
-       
-	   /*
-        for (User i : users) {
-            if(i.getIp() == clientSocket.getInetAddress()){
-                i.addSocket(clientSocket);
-                flag = true;
-                break;
-            }
-        }
-*/
-
-       if(!flag){
+    
             User x = new User(clientSocket, track);
              track.setUsers(x);
-        }
+        
         
     }
 

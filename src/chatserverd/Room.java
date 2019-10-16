@@ -35,7 +35,7 @@ public class Room extends Thread implements Runnable {
             out.add(i.getOut());
             in.add(i.getIn());
         }
-        instanceTime = System.currentTimeMillis();
+        instanceTime = System.currentTimeMillis() / 1000.0;
 
     }
 
@@ -49,7 +49,7 @@ public class Room extends Thread implements Runnable {
             out.add(i.getOut());
             in.add(i.getIn());
         }
-        instanceTime = System.currentTimeMillis() * 1000;
+        instanceTime = System.currentTimeMillis() / 1000.0;
 
     }
 
@@ -101,7 +101,7 @@ public class Room extends Thread implements Runnable {
         while (true) {
 
             if (flag) {
-                System.out.println("new in");
+          
                 i++;
                 out.add(users.get(i).getOut());
                 in.add(users.get(i).getIn());
@@ -109,7 +109,7 @@ public class Room extends Thread implements Runnable {
                 int x = i;
                 flag = false;
                 Runnable runnable = () -> {
-                    System.out.println("lambda");
+     
 
                     dist(x);
                 };
@@ -123,7 +123,7 @@ public class Room extends Thread implements Runnable {
 
     private void dist(int i) {
 
-        System.out.println("dist method run 135");
+ 
         
         
 
@@ -146,17 +146,20 @@ public class Room extends Thread implements Runnable {
                     in.remove(i);
                     break;
                 } else {
-                    double current = System.currentTimeMillis() * 1000;
+                    double current = System.currentTimeMillis() / 1000.0;
                     users.get(i).messagesSent++;
                     int sent = users.get(i).messagesSent;
-                    double elapsed = instanceTime - current;
-                    if(sent/elapsed < 5){
+                    double elapsed = Math.abs(instanceTime - current);
+                   
+                    //max messages per second 7
+                    if(sent/elapsed < 7){
+                    users.get(i).messagesSent--;
                     Room.this.distribute(users.get(i).getConnection(), input);
                     instanceTime = current;
                     }
                     else{
-                        (users.get(i).getOut()).println("to many Messages send exceeded 5 msg's per second CLOSING CONNECTION");
-                        users.get(i).getConnection().close();
+                        (users.get(i).getOut()).println("to many Messages send exceeded 7 msg's per second CLOSING CONNECTION");
+                        users.get(i).getConnection().close();  
                         users.remove(i);
                         in.remove(i);
                         out.remove(i);
@@ -178,17 +181,23 @@ public class Room extends Thread implements Runnable {
      * @throws IOException
      */
     public void distribute(Socket sender, String msg) throws IOException {
+        System.out.println("the size is :" + users.size());
+        
         int size = users.size();
+        
         String sendersName = "";
         for (int i = 0; i < size; i++) {
+            System.out.println(sendersName);
             if (users.get(i).doesUserOwnSocket(sender)) {
                 sendersName = users.get(i).getUsername();
+                
+                        
                 break;
             }
         }
-
-        for (int i = 0; i < size; i++) {
-
+        
+        for (int i = 0; i < users.size(); i++) {
+            System.out.println(i);
             (users.get(i).getOut()).println(sendersName + ": " + msg);
 
         }
